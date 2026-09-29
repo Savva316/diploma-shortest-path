@@ -1,6 +1,5 @@
 import numpy as np
 from convex_hull import ConvexHull
-#from convex_hull import add_one_point
 from graphics import *
 
 
