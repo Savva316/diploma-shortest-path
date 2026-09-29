@@ -326,6 +326,62 @@ class ConvexHull:
 
         return offset_path
 
+    def isConvexHullObstacle(self,A: np.ndarray,B: np.ndarray,) -> bool:
+
+        direction = B - A
+
+        # Изначально рассматриваем весь отрезок:
+        # 0 <= t <= 1
+        t_min = 0.0
+        t_max = 1.0
+
+        for face, normal in zip(self.faces, self.normal_to_faces):
+
+            # Любая точка грани
+            p0 = self.points[face[0]]
+
+            # Уравнение плоскости:
+            # normal · x + d = 0
+            d = -np.dot(normal, p0)
+
+            # Значение выражения в A:
+            f_A = np.dot(normal, A) + d
+
+            # Коэффициент при t:
+            f_direction = np.dot(normal, direction)
+
+            # Отрезок параллелен плоскости грани
+            if abs(f_direction) < self.eps:
+
+                # Весь отрезок находится снаружи
+                if f_A > self.eps:
+                    return False
+
+                # Эта грань больше не ограничивает t
+                continue
+
+            # Точка пересечения прямой с плоскостью грани
+            t = -f_A / f_direction
+
+            if f_direction < 0:
+                # После этой точки движемся внутрь
+                t_min = max(t_min, t)
+
+            else:
+                # После этой точки движемся наружу
+                t_max = min(t_max, t)
+
+            # Допустимый интервал стал пустым
+            if t_min > t_max + self.eps:
+                return False
+
+        # Явно пересекаем полученный интервал с (0, 1)
+        left = max(t_min, 0.0)
+        right = min(t_max, 1.0)
+
+        # Есть ненулевой участок отрезка внутри оболочки
+        return left < right - self.eps
+
 
 
 

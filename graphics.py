@@ -115,7 +115,19 @@ def PlotConvexHullAndTwoPoints(vertices, faces,p1,p2):
     #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure5.pdf")
 
     plt.show()
-
+def PlotConvexHullAndTwoPointsWithStraightShortestPath(vertices,faces, p1, p2):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(vertices[:,0], vertices[:,1], vertices[:,2], color='red', s=20)
+    
+        DrawHull(ax, vertices, faces)
+        ax.scatter(p1[0],p1[1],p1[2],color='green',s=60)
+        ax.scatter(p2[0],p2[1],p2[2],color='green',s=60)
+        path=np.array([p1,p2])
+        ax.plot(path[:,0], path[:,1], path[:,2], color='magenta', linewidth=4)
+        #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure5.pdf")
+    
+        plt.show()
 def PlotHullUpdatedByOnePoint(vertices,V,E,F, prev,new):
     # Отладочная печать
     #В-Р+Г=2
