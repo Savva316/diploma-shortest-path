@@ -148,38 +148,80 @@ def PlotHullUpdatedByOnePoint(vertices,V,E,F, prev,new):
 
 def PlotHullUpdatedByTwoPoints(vertices,V,E,F, new1,middle,new2):
     # Отладочная печать
-        #В-Р+Г=2
-        print('Построение второго дополнения к выпуклой оболочке')
-        print(f"Эйлерова характеристика равна {V+F-E} ")
-        print("###","###","###",sep='\n')
-        # Визуализация выпуклой оболочки
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(vertices[:,0], vertices[:,1], vertices[:,2], color='red', s=20)
-        ax.scatter(vertices[-2:,0], vertices[-2:,1], vertices[-2:,2], s=60, color='green')
-        DrawHull(ax, vertices, middle)
-        DrawHull(ax, vertices, new1,'orange')
-        DrawHull(ax, vertices, new2,'seagreen')
-        #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure6.pdf")
-    
-        plt.show()  
+    #В-Р+Г=2
+    print('Построение второго дополнения к выпуклой оболочке')
+    print(f"Эйлерова характеристика равна {V+F-E} ")
+    print("###","###","###",sep='\n')
+    # Визуализация выпуклой оболочки
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(vertices[:,0], vertices[:,1], vertices[:,2], color='red', s=20)
+    ax.scatter(vertices[-2:,0], vertices[-2:,1], vertices[-2:,2], s=60, color='green')
+    DrawHull(ax, vertices, middle)
+    DrawHull(ax, vertices, new1,'orange')
+    DrawHull(ax, vertices, new2,'seagreen')
+    #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure6.pdf")
+
+    plt.show()  
 def PlotConvexHullAndShortestPath(vertices,new1,middle_part,new2,path):
     # Визуализация выпуклой оболочки
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(vertices[:,0], vertices[:,1], vertices[:,2], color='red', s=20)
-            ax.scatter(vertices[-2:,0], vertices[-2:,1], vertices[-2:,2], s=60, color='green')
-            DrawHull(ax, vertices, middle_part,'cyan',visibility=0.15)
-            DrawHull(ax, vertices, new1,'orange',visibility=0.15)
-            DrawHull(ax, vertices, new2,'seagreen',visibility=0.15)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(vertices[:,0], vertices[:,1], vertices[:,2], color='red', s=20)
+    ax.scatter(vertices[-2:,0], vertices[-2:,1], vertices[-2:,2], s=60, color='green')
+    DrawHull(ax, vertices, middle_part,'cyan',visibility=0.15)
+    DrawHull(ax, vertices, new1,'orange',visibility=0.15)
+    DrawHull(ax, vertices, new2,'seagreen',visibility=0.15)
 
-            # Рисуем путь
-            ax.plot(path[:,0], path[:,1], path[:,2], color='magenta', linewidth=4)
-            ax.scatter(path[1:-1,0], path[1:-1,1], path[1:-1,2], color='yellow',edgecolors='black', s=60)
+    # Рисуем путь
+    ax.plot(path[:,0], path[:,1], path[:,2], color='magenta', linewidth=4)
+    ax.scatter(path[1:-1,0], path[1:-1,1], path[1:-1,2], color='yellow',edgecolors='black', s=60)
 
-            # Выделяем старт и финиш ярче
-            ax.scatter(path[0,0], path[0,1], path[0,2], s=60, color='green', edgecolors='black', label='Start')
-            ax.scatter(path[-1,0], path[-1,1], path[-1,2], s=60, color='green', edgecolors='black', label='End')
-            #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure8.pdf")
-        
-            plt.show()  
+    # Выделяем старт и финиш ярче
+    ax.scatter(path[0,0], path[0,1], path[0,2], s=60, color='green', edgecolors='black', label='Start')
+    ax.scatter(path[-1,0], path[-1,1], path[-1,2], s=60, color='green', edgecolors='black', label='End')
+    #plt.savefig(r"/Users/savva/Desktop/MSU/2st sem/курсач/figure8.pdf")
+
+    plt.show()  
+def PlotTwoConvexHulls(hull1, hull2,p1=None, p2=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Первая оболочка
+    ax.scatter(hull1.points[:, 0],hull1.points[:, 1],hull1.points[:, 2],color='red',s=20)
+    DrawHull(ax, hull1.points, hull1.faces)
+
+    # Вторая оболочка
+    ax.scatter(hull2.points[:, 0],hull2.points[:, 1],hull2.points[:, 2],color='blue',s=20)
+    DrawHull(ax, hull2.points, hull2.faces)
+
+    if p1 is not None:
+        ax.scatter(p1[0], p1[1], p1[2], color='green', s=60)
+
+    if p2 is not None:
+        ax.scatter(p2[0], p2[1], p2[2], color='green', s=60)
+
+    plt.show()
+
+def PlotTwoConvexHullsAndShortestPath(hull1, hull2,path):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Первая оболочка
+    ax.scatter(hull1.points[:, 0],hull1.points[:, 1],hull1.points[:, 2],color='red',s=20)
+    DrawHull(ax, hull1.points, hull1.faces)
+
+    # Вторая оболочка
+    ax.scatter(hull2.points[:, 0],hull2.points[:, 1],hull2.points[:, 2],color='blue',s=20)
+    DrawHull(ax, hull2.points, hull2.faces)
+
+    # Рисуем путь
+    ax.plot(path[:,0], path[:,1], path[:,2], color='magenta', linewidth=4)
+    ax.scatter(path[1:-1,0], path[1:-1,1], path[1:-1,2], color='yellow',edgecolors='black', s=60)
+
+    # Выделяем старт и финиш ярче
+    ax.scatter(path[0,0], path[0,1], path[0,2], s=60, color='green', edgecolors='black', label='Start')
+    ax.scatter(path[-1,0], path[-1,1], path[-1,2], s=60, color='green', edgecolors='black', label='End')
+
+    plt.show()
+         
