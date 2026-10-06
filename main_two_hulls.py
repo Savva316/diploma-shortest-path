@@ -1,6 +1,7 @@
 import numpy as np
 from convex_hull import ConvexHull
 from graphics import *
+from shortestPathBetweenTwoObstacles import *
 
 
 def main():
@@ -15,12 +16,12 @@ def main():
     PlotTwoConvexHulls(hull1, hull2)
 
     # Новые точки
-    # p1 = np.array([10.0, 10.0, 10.0])
-    # #p2 = np.array([-10.0, -10.0, -10.0])
+    p1 = np.array([30.0, 30.0, 30.0])
+    p2 = np.array([-5.0, -5.0, -5.0])
     # p2 = np.array([0.0, 10.0, 9.0])
 
-    p1 = np.array([5.0, 5.0, 15.0])
-    p2 = np.array([20.0, 20.0, -5.0])
+    #p1 = np.array([5.0, 5.0, 15.0])
+    #p2 = np.array([20.0, 20.0, -5.0])
 
     PlotTwoConvexHulls(hull1, hull2,p1,p2)
 
@@ -29,6 +30,7 @@ def main():
         path=np.array([p1,p2])
         PlotTwoConvexHullsAndShortestPath(hull1, hull2,path)
     else:
+        shortestPathBetweenTwoObstacles(hull1, hull2,p1,p2)
         pass
 
 if __name__ == "__main__":
