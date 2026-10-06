@@ -15,7 +15,8 @@ class ConvexHull:
         self.max_iterations=max_iterations
         self.eps=eps
         self.n = len(self.points)
-        self.faces,self.normal_to_faces, self.V, self.E, self.F = self._build_hull()
+        self.faces, self.points, self.edges = self._build_hull() 
+        self.n = len(self.points)
 
     def _build_hull(self):
         A_index, B_index, C_index,n_ABC= self._find_initial_points()
@@ -79,14 +80,41 @@ class ConvexHull:
                 self.saved_faces_2=faces.copy()
 
         self.iterations=iteration
-        V=set()
-        for edge in edges_in_hull:
-            V.add(edge[0])
-            V.add(edge[1])
-        vertices_in_hull=len(V)
-        faces_in_hull=len(faces)
+        vert=set()
+        for face in faces:
+            i,j,k=face
+            vert.add(i);    vert.add(j);    vert.add(k)
+        sorted_vert_list = sorted(list(vert))
 
-        return faces,normal_to_faces, vertices_in_hull,len(edges_in_hull),faces_in_hull 
+        V = self.points[sorted_vert_list].astype(np.float64)
+
+        #Создаем переводчик со старых индексов на новые
+        index_map = {}
+        for new_idx, old_val in enumerate(sorted_vert_list):
+            index_map[int(old_val)] = new_idx
+
+        self.saved_faces_2 = [(index_map[face[0]],index_map[face[1]],index_map[face[2]])for face in self.saved_faces_2]
+        self.saved_faces_1 = [(index_map[face[0]],index_map[face[1]],index_map[face[2]])for face in self.saved_faces_1]
+
+        F_list = []
+        for face in faces:
+            new_face = [index_map[int(face[0])], index_map[int(face[1])], index_map[int(face[2])]]
+            F_list.append(new_face)
+
+        F = F_list
+
+        edges = set()
+
+        for face in F:
+            i, j, k = face
+
+            edges.add(tuple(sorted((i, j))))
+            edges.add(tuple(sorted((j, k))))
+            edges.add(tuple(sorted((k, i))))
+
+        E = np.array(sorted(edges), dtype=np.int32)
+
+        return F,V,E
     
     def _find_initial_points(self):
         ez=np.array([0,0,1]) # нормаль к oXY
@@ -207,10 +235,9 @@ class ConvexHull:
         return best_index,n
 
 
-    def add_one_point(self, p1:np.ndarray):
+    def add_one_point(self, p1:np.ndarray,prev_info=None):
 
         self.points = np.vstack([self.points, p1])
-        self.p1_index=self.n
         self.n+=1
         p1_index=len(self.points)-1
 
@@ -219,18 +246,15 @@ class ConvexHull:
         iterations=0
         while i < len(self.faces):
             iterations+=1
-            n = self.normal_to_faces[i]
             A_index, B_index, C_index = self.faces[i]
             n1=self._normal_by_right_tr(A_index, B_index,C_index)
-            if np.linalg.norm(n1-n)>self.eps:
-                assert("Проблема c нормалью и правой тройкой")
             v1 = p1 - self.points[A_index]
             
-            if np.dot(n, v1) > self.eps:
+            if np.dot(n1, v1) > self.eps:
             
                 # Удаляем грань
                 removed_face = self.faces.pop(i)
-                self.normal_to_faces.pop(i)
+
                 A_index, B_index, C_index = removed_face
                 
                 # Обрабатываем каждое ребро грани
@@ -262,58 +286,72 @@ class ConvexHull:
                 first_part.append((i, j))
 
         faces_in_first_part=[]
-        normal_to_faces_in_first_part=[]
+        
         for edges in first_part:
             i,j=edges
             faces_in_first_part.append((i,j, p1_index))
-            # добавим нормали
-            normal_to_faces_in_first_part.append(self._normal_by_right_tr(i, j,p1_index))
-        prev_faces=self.faces.copy()
-        self.faces=prev_faces+faces_in_first_part
-        self.normal_to_faces=self.normal_to_faces+normal_to_faces_in_first_part
-        new_V=set()
-        edges_in_hull=set()
+            
+        prev_faces = self.faces.copy()
+        self.faces = prev_faces + faces_in_first_part
+
+        edges = set()
+
         for face in self.faces:
-            i,j,k=face
-            new_V.add(i)
-            new_V.add(j)
-            new_V.add(k)
-            edges_in_hull.add((i,j)); edges_in_hull.add((j,i))
-            edges_in_hull.add((j,k)); edges_in_hull.add((k,j))
-            edges_in_hull.add((k,i)); edges_in_hull.add((i,k))
+            i, j, k = face
 
-        self.V, self.E, self.F =len(new_V),len(edges_in_hull)//2,len(self.faces)
+            edges.add(tuple(sorted((i, j))))
+            edges.add(tuple(sorted((j, k))))
+            edges.add(tuple(sorted((k, i))))
 
-        return prev_faces,faces_in_first_part
-    
-    def find_shortest_path(self,p1_index:int, p2_index:int):
-        center=np.mean(self.points,axis=0)
+            self.edges = np.array(sorted(edges), dtype=np.int32)
+
+        self.V = len(set(v for face in self.faces for v in face))
+        self.E = len(edges)
+        self.F = len(self.faces) 
+
+        return prev_faces,faces_in_first_part,p1_index
+    def compact(self):
         vert=set()
         for face in self.faces:
             i,j,k=face
             vert.add(i);    vert.add(j);    vert.add(k)
         sorted_vert_list = sorted(list(vert))
 
-        V = self.points[sorted_vert_list].astype(np.float64)
+        self.points = self.points[sorted_vert_list].astype(np.float64)
 
         #Создаем переводчик со старых индексов на новые
         index_map = {}
         for new_idx, old_val in enumerate(sorted_vert_list):
             index_map[int(old_val)] = new_idx
 
-
         F_list = []
         for face in self.faces:
             new_face = [index_map[int(face[0])], index_map[int(face[1])], index_map[int(face[2])]]
             F_list.append(new_face)
 
-        F = np.array(F_list, dtype=np.int32)
+        self.faces = F_list
 
-        idx_start=index_map[p1_index]
-        idx_end=index_map[p2_index]
+        edges = set()
+
+        for face in self.faces:
+            i, j, k = face
+
+            edges.add(tuple(sorted((i, j))))
+            edges.add(tuple(sorted((j, k))))
+            edges.add(tuple(sorted((k, i))))
+
+        self.edges = np.array(sorted(edges), dtype=np.int32)
+
+        return index_map
+    
+    def find_shortest_path(self,p1_index:int, p2_index:int):
+        center=np.mean(self.points,axis=0)
+
+        idx_start=p1_index
+        idx_end=p2_index
 
         try:
-            geo = geodesic.PyGeodesicAlgorithmExact(V, F)
+            geo = geodesic.PyGeodesicAlgorithmExact(self.points, self.faces)
             distance, path = geo.geodesicDistance(idx_start, idx_end)
             
             if path is not None:
@@ -326,7 +364,7 @@ class ConvexHull:
 
         return offset_path
 
-    def isConvexHullObstacle(self,A: np.ndarray,B: np.ndarray,) -> bool:
+    def isConvexHullObstacle(self,A: np.ndarray,B: np.ndarray) -> bool:
 
         direction = B - A
 
@@ -335,8 +373,9 @@ class ConvexHull:
         t_min = 0.0
         t_max = 1.0
 
-        for face, normal in zip(self.faces, self.normal_to_faces):
-
+        #for face, normal in zip(self.faces, self.normal_to_faces):
+        for face in self.faces:
+            normal=self._normal_by_right_tr(face[0], face[1],face[2])
             # Любая точка грани
             p0 = self.points[face[0]]
 
@@ -381,6 +420,8 @@ class ConvexHull:
 
         # Есть ненулевой участок отрезка внутри оболочки
         return left < right - self.eps
+
+    
 
 
 
