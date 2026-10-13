@@ -224,4 +224,63 @@ def PlotTwoConvexHullsAndShortestPath(hull1, hull2,path):
     ax.scatter(path[-1,0], path[-1,1], path[-1,2], s=60, color='green', edgecolors='black', label='End')
 
     plt.show()
-         
+
+def PlotTwoConvexHullsAndShortestPathBetweenThem(hull1,hull2,p1_index_new,p2_index_new,s0_index,s1_index,path0,path1):
+    # Отладочная печать
+    print(f"Первая выпуклая оболочка")
+
+    # Отладочная печать
+    # В + Г - Р = 2
+    print(f"При построении выпуклой оболочки получено: ",end=" ")
+    print(f"{hull1.V} вершин",end=" ")
+    print(f"{hull1.F} граней",end=" ")
+    print(f"{hull1.E} ребер")
+    print(f"Эйлерова характеристика равна {hull1.V+hull1.F-hull1.E} ")
+    print("###","###","###",sep='\n')
+
+    print(f"Первая выпуклая оболочка")
+    
+    # Отладочная печать
+    # В + Г - Р = 2
+    print(f"При построении выпуклой оболочки получено: ",end=" ")
+    print(f"{hull1.V} вершин",end=" ")
+    print(f"{hull1.F} граней",end=" ")
+    print(f"{hull1.E} ребер")
+    print(f"Эйлерова характеристика равна {hull1.V+hull1.F-hull1.E} ")
+    print("###","###","###",sep='\n')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Первая оболочка
+    ax.scatter(hull1.points[:, 0],hull1.points[:, 1],hull1.points[:, 2],color='red',s=20)
+    DrawHull(ax, hull1.points, hull1.faces,visibility=0.15)
+
+    # Вторая оболочка
+    ax.scatter(hull2.points[:, 0],hull2.points[:, 1],hull2.points[:, 2],color='blue',s=20)
+    DrawHull(ax, hull2.points, hull2.faces,visibility=0.15)
+
+    # Рисуем путь
+    ax.plot(path0[:,0], path0[:,1], path0[:,2], color='magenta', linewidth=4)
+    ax.scatter(path0[1:-1,0], path0[1:-1,1], path0[1:-1,2], color='yellow',edgecolors='black', s=60)
+
+    ax.plot(path1[:,0], path1[:,1], path1[:,2], color='magenta', linewidth=4)
+    ax.scatter(path1[1:-1,0], path1[1:-1,1], path1[1:-1,2], color='yellow',edgecolors='black', s=60)
+
+    # Выделяем старт и финиш ярче
+    ax.scatter(path1[0,0], path1[0,1], path1[0,2], s=60, color='green', edgecolors='black', label='Start')
+    ax.scatter(path1[-1,0], path1[-1,1], path1[-1,2], s=60, color='green', edgecolors='black', label='End')
+
+    ax.scatter(path0[0,0], path0[0,1], path0[0,2], s=60, color='green', edgecolors='black', label='Start')
+    ax.scatter(path0[-1,0], path0[-1,1], path0[-1,2], s=60, color='green', edgecolors='black', label='End')
+
+    # Путь между S0 и S1
+    S0 = hull1.points[s0_index]
+    S1 = hull2.points[s1_index]
+
+    ax.plot([S0[0], S1[0]],[S0[1], S1[1]],[S0[2], S1[2]],color='orange',linewidth=4,linestyle='-',label='S0 -> S1')
+
+    ax.scatter(*S0, color='orange', edgecolors='black', s=80, label='S0')
+    ax.scatter(*S1, color='orange', edgecolors='black', s=80, label='S1')
+
+    plt.show()

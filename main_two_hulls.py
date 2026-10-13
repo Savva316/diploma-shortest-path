@@ -5,6 +5,7 @@ from shortestPathBetweenTwoObstacles import *
 
 
 def main():
+    np.random.seed(42)
     # Задаем первое препятствие
     n = 30
     points = np.random.uniform(0, 10, size=(n, 3))
@@ -16,8 +17,9 @@ def main():
     PlotTwoConvexHulls(hull1, hull2)
 
     # Новые точки
-    p1 = np.array([30.0, 30.0, 30.0])
-    p2 = np.array([-5.0, -5.0, -5.0])
+    p1 = np.array([-5.0, -5.0, -5.0])
+    p2 = np.array([30.0, 30.0, 30.0])
+    
     # p2 = np.array([0.0, 10.0, 9.0])
 
     #p1 = np.array([5.0, 5.0, 15.0])
@@ -30,8 +32,9 @@ def main():
         path=np.array([p1,p2])
         PlotTwoConvexHullsAndShortestPath(hull1, hull2,path)
     else:
-        shortestPathBetweenTwoObstacles(hull1, hull2,p1,p2)
-        pass
+        result = shortestPathBetweenTwoObstacles(hull1, hull2, p1, p2)
+        PlotTwoConvexHulls(hull1, hull2,p1,p2)
+        PlotTwoConvexHullsAndShortestPathBetweenThem(hull1,hull2,result["p1_index_new"],result["p2_index_new"],result["s0_index"],result["s1_index"],result["path0"],result["path1"])
 
 if __name__ == "__main__":
     main()
