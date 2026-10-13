@@ -342,6 +342,11 @@ class ConvexHull:
 
         self.edges = np.array(sorted(edges), dtype=np.int32)
 
+        self.n = len(self.points)
+        self.V = len(self.points)
+        self.E = len(self.edges)
+        self.F = len(self.faces)
+
         return index_map
     
     def find_shortest_path(self,p1_index:int, p2_index:int):
@@ -422,6 +427,101 @@ class ConvexHull:
         return left < right - self.eps
 
     
+    def insert_point_on_edge(self,edge: tuple[int, int],point: np.ndarray,p_index: int,eps: float = 1e-8):
+        """
+        Вставляет точку на ребро сетки, разбивая прилегающие
+        треугольники.
+
+        Возвращает:
+            p_index — индекс исходной точки;
+            s_index — индекс вставленной точки.
+        """
+
+        a, b = map(int, edge)
+        point = np.asarray(point, dtype=float)
+
+        A = self.points[a]
+        B = self.points[b]
+
+        # Проверяем, не совпадает ли точка с концом ребра
+        if np.linalg.norm(point - A) < eps:
+            return p_index, a
+
+        if np.linalg.norm(point - B) < eps:
+            return p_index, b
+
+        # Проверяем принадлежность точки отрезку AB
+        AB = B - A
+        denom = np.dot(AB, AB)
+
+        if denom == 0:
+            raise ValueError("Ребро имеет нулевую длину")
+
+        t = np.dot(point - A, AB) / denom
+        projection = A + t * AB
+
+        if not (-eps <= t <= 1 + eps):
+            raise ValueError("Точка находится вне отрезка ребра")
+
+        if np.linalg.norm(point - projection) > eps:
+            raise ValueError("Точка не лежит на ребре")
+
+        # Новая вершина добавляется в конец массива.
+        # Индексы прежних вершин сохраняются.
+        s_index = len(self.points)
+        self.points = np.vstack([self.points, point])
+
+        new_faces = []
+        split_count = 0
+
+        for face in self.faces:
+            face = list(map(int, face))
+            split = False
+
+            # Проверяем каждое направленное ребро треугольника
+            for i in range(3):
+                v0 = face[i]
+                v1 = face[(i + 1) % 3]
+                v2 = face[(i + 2) % 3]
+
+                if {v0, v1} == {a, b}:
+                    # Сохраняем ориентацию исходного треугольника
+                    new_faces.append([v0, s_index, v2])
+                    new_faces.append([s_index, v1, v2])
+
+                    split = True
+                    split_count += 1
+                    break
+
+            if not split:
+                new_faces.append(face)
+
+        if split_count == 0:
+            # Не оставляем точку в сетке, если ребро не найдено
+            self.points = self.points[:-1]
+            raise ValueError("Указанное ребро не найдено в сетке")
+
+        self.faces = new_faces
+
+        # Обновляем рёбра сетки
+        edges = set()
+
+        for face in self.faces:
+            i, j, k = face
+            edges.add(tuple(sorted((i, j))))
+            edges.add(tuple(sorted((j, k))))
+            edges.add(tuple(sorted((k, i))))
+
+        self.edges = np.array(sorted(edges), dtype=np.int32)
+
+        # Обновляем характеристики сетки
+        self.n = len(self.points)
+        self.V = len(set(v for face in self.faces for v in face))
+        self.E = len(edges)
+        self.F = len(self.faces)
+
+        return p_index, s_index
+
 
 
 
