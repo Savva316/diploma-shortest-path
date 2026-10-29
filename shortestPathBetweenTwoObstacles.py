@@ -90,13 +90,13 @@ def shortestPathBetweenTwoObstacles(hull1:ConvexHull, hull2:ConvexHull, p1: np.n
     # от p1 по первой оболочке
     algorithm1.propagate_from_vertex(p1_index)
 
-    distance_test, path_test = algorithm1.geodesicDistance(
-    int(p1_index),
-    int(algorithm1.get_edge_vertices(next(iter(edges_prev1_to_id.values())))[0]))
+    # distance_test, path_test = algorithm1.geodesicDistance(
+    # int(p1_index),
+    # int(algorithm1.get_edge_vertices(next(iter(edges_prev1_to_id.values())))[0]))
 
-    print("Тестовое геодезическое расстояние:", distance_test)
-    print("Тестовый путь:")
-    print(path_test)
+    # print("Тестовое геодезическое расстояние:", distance_test)
+    # print("Тестовый путь:")
+    # print(path_test)
 
     # Один раз распространяем расстояние
     # от p2 по второй оболочке
@@ -129,45 +129,6 @@ def shortestPathBetweenTwoObstacles(hull1:ConvexHull, hull2:ConvexHull, p1: np.n
         B1 = hull2.points[v11]
         length1 = np.linalg.norm(B1 - A1)
 
-        # print("\nПроверка 9 комбинаций:")
-
-        for t_test in [0.0, 0.5, 1.0]:
-            for u_test in [0.0, 0.5, 1.0]:
-
-                S0_test = A0 + t_test * (B0 - A0)
-                S1_test = A1 + u_test * (B1 - A1)
-
-                d0_test = algorithm1.distance_on_edge(
-                    edge_id0, t_test * length0
-                )
-                d1_test = algorithm2.distance_on_edge(
-                    edge_id1, u_test * length1
-                )
-
-                bridge_test = np.linalg.norm(
-                    S1_test - S0_test
-                )
-
-                F_test = d0_test + bridge_test + d1_test
-
-                # print(
-                #     f"t={t_test:.1f}, "
-                #     f"u={u_test:.1f}, "
-                #     f"F={F_test:.6f}"
-                # )
-
-
-        # print("Первое ребро:", v00, v01)
-        # print("Его координаты:", A0, B0)
-        # print("Длина первого ребра:", length0)
-
-        # print("Второе ребро:", v10, v11)
-        # print("Его координаты:", A1, B1)
-        # print("Длина второго ребра:", length1)
-
-        
-
-        best = None
 
         for t in np.linspace(0.0, 1.0, num_samples):
             S0 = A0 + t * (B0 - A0)

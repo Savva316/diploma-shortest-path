@@ -427,15 +427,7 @@ class ConvexHull:
         return left < right - self.eps
 
     
-    def insert_point_on_edge(self,edge: tuple[int, int],point: np.ndarray,p_index: int,eps: float = 1e-8):
-        """
-        Вставляет точку на ребро сетки, разбивая прилегающие
-        треугольники.
-
-        Возвращает:
-            p_index — индекс исходной точки;
-            s_index — индекс вставленной точки.
-        """
+    def insert_point_on_edge(self,edge: tuple[int, int],point: np.ndarray,p_index: int):
 
         a, b = map(int, edge)
         point = np.asarray(point, dtype=float)
@@ -444,10 +436,10 @@ class ConvexHull:
         B = self.points[b]
 
         # Проверяем, не совпадает ли точка с концом ребра
-        if np.linalg.norm(point - A) < eps:
+        if np.linalg.norm(point - A) < self.eps:
             return p_index, a
 
-        if np.linalg.norm(point - B) < eps:
+        if np.linalg.norm(point - B) < self.eps:
             return p_index, b
 
         # Проверяем принадлежность точки отрезку AB
@@ -460,10 +452,10 @@ class ConvexHull:
         t = np.dot(point - A, AB) / denom
         projection = A + t * AB
 
-        if not (-eps <= t <= 1 + eps):
+        if not (-self.eps <= t <= 1 + self.eps):
             raise ValueError("Точка находится вне отрезка ребра")
 
-        if np.linalg.norm(point - projection) > eps:
+        if np.linalg.norm(point - projection) > self.eps:
             raise ValueError("Точка не лежит на ребре")
 
         # Новая вершина добавляется в конец массива.
