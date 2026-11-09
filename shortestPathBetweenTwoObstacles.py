@@ -129,7 +129,7 @@ def shortestPathBetweenTwoObstacles(hull1:ConvexHull, hull2:ConvexHull, p1: np.n
         B1 = hull2.points[v11]
         length1 = np.linalg.norm(B1 - A1)
 
-
+        best = None
         for t in np.linspace(0.0, 1.0, num_samples):
             S0 = A0 + t * (B0 - A0)
             d0 = algorithm1.distance_on_edge(edge_id0, t * length0)
